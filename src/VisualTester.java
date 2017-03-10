@@ -1,5 +1,7 @@
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -34,53 +36,113 @@ public class VisualTester extends PApplet {
 			image(current_image, 0, 0); // display image i
 		}
 
-		text(mouseX + "   " + mouseY, mouseX, mouseY);
+		stroke(0, 0, 255);
 		if (OpticalMarkReader.isBubbled(mouseY, mouseX, 20, 20, .8, current_image)) {
-			fill(255, 0, 0);
-			rect(mouseX, mouseY, 22, 22);
+			fill(0, 0, 255);
+			rect(mouseX, mouseY, 20, 20);
 		}
+		text("" + mouseX + "   " + mouseY, mouseX, mouseY);
 
 		noFill();
-		stroke(0, 0, 0);
+		stroke(255, 0, 0);
 		strokeWeight(1);
 
-		double C = 0;
+		int C = 0;
 
 		double x = 125;
 		double y = 468;
 		double xs = 38;
 		double ys = 37.5;
-		double num = 10;
+		double num = 10;// vertical
 
-		double CUT = .95;
+		int BOXx = 30;
+		int BOXy = 30;
+
+		double CUT = .92;
 
 		for (double i = x; i < x + xs * 5; i += xs) {
 			for (double j = y; j < y + ys * num; j += ys) {
-				boolean a = OpticalMarkReader.isBubbled((int) i, (int) j, (int) xs, (int) ys, CUT, images.get(0));
-				boolean b = OpticalMarkReader.isBubbled((int) i, (int) j, (int) xs, (int) ys, CUT, current_image);
-				System.out.println(a + "\t" + b);
-
-				stroke(255, 0, 0);
-				text(" " + (float)OpticalMarkReader.getDarkness((int) i, (int) j, (int) xs, (int) ys, CUT, current_image),
-						(float) i, (float) j);
-
+				boolean a = OpticalMarkReader.isBubbled((int) j, (int) i, BOXx, BOXy, CUT, images.get(0));
+				boolean b = OpticalMarkReader.isBubbled((int) j, (int) i, BOXx, BOXy, CUT, current_image);
+				// text("" + b,(int)i,(int)j);
 				if (a != b) {
 					C++;
-					stroke(0, 0, 0);
-					rect((int) i, (int) j, (int) xs, (int) ys);
+				}
+
+				if (b) {
+					stroke(0, 0, 255);
+					rect((int) i, (int) j, BOXx, BOXy);
 				} else {
 					stroke(255, 0, 0);
-					rect((int) i, (int) j, (int) xs, (int) ys);
+					rect((int) i, (int) j, BOXx, BOXy);
 				}
 
 			}
 		}
 		System.out.println((num - C) / (num));
+		// delay(1000);
+
 	}
 
 	public void mouseReleased() {
 		currentImageIndex = (currentImageIndex + 1) % images.size(); // increment
 																		// current
 																		// image
+	}
+
+	public void saveScores() {
+		String OUT = "";
+
+		int C = 0;
+
+		double x = 125;
+		double y = 468;
+		double xs = 38;
+		double ys = 37.5;
+		double num = 25;// vertical
+
+		int BOXx = 30;
+		int BOXy = 30;
+
+		double CUT = .92;
+
+		for (PImage image : images) {
+			int Question = 0;
+			for (int set = 0; set < 4; set++) {
+				for (double j = y; j < y + ys * num; j += ys) {
+					Question++;
+					boolean isCorrect = true;
+					for (double i = x; i < x + xs * 5; i += xs) {
+
+						boolean a = OpticalMarkReader.isBubbled((int) j, (int) i + 280 * set, BOXx, BOXy, CUT,
+								images.get(0));
+						boolean b = OpticalMarkReader.isBubbled((int) j, (int) i + 280 * set, BOXx, BOXy, CUT, image);
+						if (a && !b) {
+							C++;
+							isCorrect = false;
+							break;
+						}
+
+					}
+					if (isCorrect) {
+						OUT += Question + " G,";
+					} else {
+						OUT += Question + " X,";
+					}
+				}
+				OUT += " ::: " + (num - C) / (num) + "/n";
+			}
+		}
+		
+		writeDataToFile("../Grades",OUT); // write data to file
+	}
+
+	public static void writeDataToFile(String filePath, String data) {
+		File outFile = new File(filePath);
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
+			writer.write(data);
+		} catch (Exception e) {
+
+		}
 	}
 }

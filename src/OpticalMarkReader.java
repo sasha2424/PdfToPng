@@ -20,31 +20,30 @@ public class OpticalMarkReader {
 
 	public static int getPixelAt(int row, int col, PImage image) {
 
-
 		int index = row * image.width + col;
 
 		return image.pixels[index] & 255;
 	}
 
-	public static boolean isBubbled(int r,int c,int h,int w,double p,PImage image){
+	public static boolean isBubbled(int r, int c, int h, int w, double p, PImage image) {
 		long sum = 0;
-		for(int i =r; i < r+h;i++){
-			for(int j =c; j < c+w;j++){
-				sum += getPixelAt(i,j,image);
+		for (int i = r; i < r + h; i++) {
+			for (int j = c; j < c + w; j++) {
+				sum += getPixelAt(i, j, image);
 			}
 		}
-		double d = (sum/((double)((long)(w*h) * (long)(255))));
+		double d = (sum / ((double) (w * h * 255)));
 		return (d < p);
 	}
-	
-	public static double getDarkness(int r,int c,int h,int w,double p,PImage image){
+
+	public static double getDarkness(int r, int c, int h, int w, double p, PImage image) {
 		long sum = 0;
-		for(int i =r; i < r+h;i++){
-			for(int j =c; j < c+w;j++){
-				sum += getPixelAt(i,j,image);
+		for (int i = r; i < r + h; i++) {
+			for (int j = c; j < c + w; j++) {
+				sum += getPixelAt(i, j, image);
 			}
 		}
-		return (sum/((double)((long)(w*h) * (long)(255))));
-		
+		return (sum / ((double) ((long) (w * h) * (long) (255))));
+
 	}
 }
